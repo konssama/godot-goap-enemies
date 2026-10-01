@@ -7,13 +7,13 @@ func _ready() -> void:
 	agent = get_parent()
 	agent_id = agent.get_instance_id()
 	EngineDebugger.send_message("goap:create_agent", [agent_id])
-	EngineDebugger.send_message("goap:set_agemt_name", [agent_id, agent.entity.name])
+	EngineDebugger.send_message("goap:set_agent_name", [agent_id, agent.entity.name])
 	
 	tree_exiting.connect(
 		EngineDebugger.send_message.bind("goap:clear_agent", [agent_id])
 	)
 	agent.renamed.connect(
-		EngineDebugger.send_message.bind("goap:set_agemt_name", [agent_id, agent.entity.name])
+		EngineDebugger.send_message.bind("goap:set_agent_name", [agent_id, agent.entity.name])
 	)
 	agent.goal_chosen.connect(
 		func(goal:GoapGoal):
