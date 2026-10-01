@@ -1,5 +1,5 @@
-# **Goal-Oriented Action Planning for Godot 4.**  Goal Oriented Action Planning implementation for Godot 
-# Version 0.1 beta.  Do *not* base any project on this as there's probably a ton of bugs i haven't come across.
+# **Goal-Oriented Action Planning for Godot 4.**  [Goal Oriented Action Planning](https://www.gamedevs.org/uploads/three-states-plan-ai-of-fear.pdf) implementation for Godot based on F.E.A.R by [Monolith](https://en.wikipedia.org/wiki/Monolith_Productions).
+# Version 0.1 beta. Do *not* base any project on this as there's probably a ton of bugs I haven't come across.
 
 
 ## Features
@@ -8,15 +8,15 @@
 - `GoapAgent2D` and `GoapAgent3D` with built-in `NavigationAgent` movement and smooth turning
 - Goals re-evaluated every plan tick, so higher-priority goals can interrupt the current plan
 - Plans that heal themselves: invalid actions or plans are dropped and re-planned
-- Per-action goto positions, including moving targets (my main disign differnece from F.E.A.R)
-- Component dictionary to keep actions generic and allow integration with your game systems (one `shoot` action can use the refrence the dictionary holds as `weapon`)
-- Built-in "eyes" sysrem for agents to detect specific node groups and methods to refrence them (tip: use two sets of eyes - a frustum one for moving targets - and a spherical one for static objects to mimick object permanance). Eyes currently have no line-of-sight but will be added soon.
+- Per-action goto positions, including moving targets (my main design difference from F.E.A.R)
+- Component dictionary to keep actions generic and allow integration with your game systems (one `shoot` action can use the reference the dictionary holds as `weapon`)
+- Built-in "eyes" system for agents to detect specific node groups and methods to reference them (tip: use two sets of eyes - a frustum one for moving targets - and a spherical one for static objects to mimic object permanence). Eyes currently have no line-of-sight but will be added soon.
 
 
 ## Installation
 
-1. Copy the plugin to `res://addons/godot_goap_enemies/`.
-2. Enable it under **Project → Project Settings → Plugins**.
+1. Copy the plugin to `res://addons/godot_goap_enemies/`
+2. Enable it under **Project → Project Settings → Plugins**
 
 
 ## Usage
@@ -40,7 +40,8 @@
 *Features I'm planning to add:*
 - SmartObject Actions
 - Better "Target" system for the agent eyes, that will keep track of distance and awareness
-- ActionSet and GoalSet Resources to be saved and shared between agent, along with per-agent specific bias for costs
+- ActionSet and GoalSet Resources to be saved and shared between agents, along with per-agent specific bias for costs
+- Grouping API with clean `world_state` properties for goals to adjust their priority easily
 - Actually release this on the godot asset store
 
 ## License
