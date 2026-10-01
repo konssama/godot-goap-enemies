@@ -1,0 +1,28 @@
+; Engine configuration file.
+; It's best edited using the editor UI and not directly,
+; since the parameters that go here are not all obvious.
+;
+; Format:
+;   [section] ; section goes between []
+;   param=value ; assign values to parameters
+
+config_version=5
+
+[application]
+
+config/name="GodotGoapEnemies"
+run/main_scene="uid://cxt83h5glgset"
+config/features=PackedStringArray("4.7", "Forward Plus")
+config/icon="res://examples/icon.svg"
+
+[editor_plugins]
+
+enabled=PackedStringArray("res://addons/godot_goap_enemies/plugin.cfg")
+
+[physics]
+
+3d/physics_engine="Jolt Physics"
+
+[rendering]
+
+rendering_device/driver.windows="d3d12"

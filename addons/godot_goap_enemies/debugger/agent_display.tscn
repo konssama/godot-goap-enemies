@@ -1,0 +1,48 @@
+[gd_scene format=3 uid="uid://dmq6etltlu8fd"]
+
+[ext_resource type="Script" uid="uid://brjoped55oh04" path="res://addons/godot_goap_enemies/debugger/agent_display.gd" id="1_vavqh"]
+
+[node name="PanelContainer" type="PanelContainer" unique_id=1488963660]
+size_flags_vertical = 3
+script = ExtResource("1_vavqh")
+
+[node name="MarginContainer" type="MarginContainer" parent="." unique_id=781691691]
+layout_mode = 2
+theme_override_constants/margin_left = 4
+theme_override_constants/margin_top = 4
+theme_override_constants/margin_right = 4
+theme_override_constants/margin_bottom = 4
+
+[node name="VBoxContainer" type="VBoxContainer" parent="MarginContainer" unique_id=327235420]
+layout_mode = 2
+
+[node name="Name" type="Label" parent="MarginContainer/VBoxContainer" unique_id=484645707]
+layout_mode = 2
+text = "Agent #1"
+
+[node name="HBoxContainer" type="HBoxContainer" parent="MarginContainer/VBoxContainer" unique_id=2014349025]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="VBoxContainer" type="VBoxContainer" parent="MarginContainer/VBoxContainer/HBoxContainer" unique_id=1309802870]
+layout_mode = 2
+
+[node name="State" type="Label" parent="MarginContainer/VBoxContainer/HBoxContainer/VBoxContainer" unique_id=640607029]
+layout_mode = 2
+text = "State: GOTO"
+
+[node name="Goal" type="Label" parent="MarginContainer/VBoxContainer/HBoxContainer/VBoxContainer" unique_id=16754506]
+layout_mode = 2
+text = "Goal: \"p_goal\""
+
+[node name="HSeparator" type="HSeparator" parent="MarginContainer/VBoxContainer/HBoxContainer/VBoxContainer" unique_id=261837002]
+layout_mode = 2
+
+[node name="Plan" type="VBoxContainer" parent="MarginContainer/VBoxContainer/HBoxContainer/VBoxContainer" unique_id=1891293225]
+layout_mode = 2
+
+[node name="WorldState" type="Label" parent="MarginContainer/VBoxContainer/HBoxContainer" unique_id=1693386806]
+layout_mode = 2
+text = "{
+\"state\": pp
+}"
