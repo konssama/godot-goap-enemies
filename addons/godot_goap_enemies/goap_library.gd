@@ -1,6 +1,7 @@
 class_name GoapLibrary
 
-#enum Distance {MELEE, CLOSE, MID, FAR}
+enum Distance {MELEE, CLOSE, FAR, INFINITE}
+enum Awareness {NONE, LOW, HIGH}
 
 const goals_library = {
 	"be_safe" = preload("res://goals/be_safe.gd")

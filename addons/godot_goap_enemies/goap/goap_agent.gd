@@ -20,13 +20,13 @@ signal action_began_animating(action:GoapAction)
 
 const DEBUGGER_ATTACHMENT = preload("res://addons/godot_goap_enemies/debugger/agent_attachment.gd")
 
-## Array of goals accesed by [StringName]. All goals need to be declared in [code]"res://addons/godot_goap_enemies/goap_library.gd"[/code]
+## Array of goals accessed by [StringName]. All goals need to be declared in [code]"res://addons/godot_goap_enemies/goap_library.gd"[/code]
 @export var goals:Array[StringName]
-## Array of actions accesed by [StringName]. All actions need to be declared in [code]"res://addons/godot_goap_enemies/goap_library.gd"[/code]
+## Array of actions accessed by [StringName]. All actions need to be declared in [code]"res://addons/godot_goap_enemies/goap_library.gd"[/code]
 @export var actions:Array[StringName]
 
-## Store node refrences to use as abstractions in action scripts or interface with
-## your other game systems. Want a global "shoot" action for enemies that shoot diferent projectiles?
+## Store node references to use as abstractions in action scripts or interface with
+## your other game systems. Want a global "shoot" action for enemies that shoot different projectiles?
 ## Use [method get_component] to get the [code]"ranged_weapon"[/code] node you stored
 ## and let that handle it.
 @export var components:Dictionary[StringName, Node]
@@ -47,9 +47,11 @@ var _current_action:GoapAction
 var _current_plan:Array[GoapAction]
 var _plan_step:int = 0
 
-var _is_paused_manualy := false
+var _is_paused_manually := false
 var _pause_frames := 0
 
+## Assigned on ready to control what frames planning runs on. Changing this will break monitors.
+var thread_num:int
 
 func _ready() -> void:
 	add_to_group("goap_agents")
@@ -68,17 +70,24 @@ func _ready() -> void:
 	for c in components.keys():
 		world_state["has_" + c] = true
 	
+	GoapServer.register_agent(self)
+	
 	if enable_debugger:
 		var attachment = DEBUGGER_ATTACHMENT.new()
 		add_child(attachment)
 		await attachment.ready
 
 func _physics_process(delta: float) -> void:
-	if not _is_paused_manualy:
-		# bit of a weird if statement, but i want the plan to pause for _is_paused_manualy
+	if not _is_paused_manually:
+		# bit of a weird if statement, but i want the plan to pause for _is_paused_manually
 		# but continue for _pause_frames>0. It would be a shame if it needed to plan for the 
 		# last pause frame and then have to wait again for it's turn
-		_plan_process(delta) # TODO have every agent spread between frames
+		if Engine.get_physics_frames() % GoapServer.THREAD_NUM == thread_num:
+			var start_time = Time.get_ticks_usec()
+			_plan_process(delta)
+			var end_time = Time.get_ticks_usec() - start_time
+			GoapServer.report_planning_time(end_time)
+			#print("ticked at ", Engine.get_physics_frames(), " time: ", end_time)
 		if _pause_frames > 0:
 			_pause_frames -= 1
 			_pause_frames = max(0, _pause_frames)
@@ -167,6 +176,7 @@ func is_action_reachable(action:GoapAction) -> bool:
 	return true # implemented differently for 2d and 3d agents
 
 func _clear_plan():
+	_action_state = ActionState.IDLE
 	_current_plan.clear()
 	_plan_step = 0
 
@@ -186,13 +196,13 @@ func _get_best_goal() -> GoapGoal:
 	return chosen_goal
 
 func start():
-	_is_paused_manualy = false
+	_is_paused_manually = false
 
 func pause():
-	_is_paused_manualy = true
+	_is_paused_manually = true
 
 func is_paused() -> bool:
-	return _is_paused_manualy or _pause_frames > 0
+	return _is_paused_manually or _pause_frames > 0
 
 ## Pauses general animating like moving or executing actions for [param physics_frames].
 ## Plan processing is still active without being executed. If currently paused, the remaining frames
@@ -206,7 +216,7 @@ func get_component(component_key:StringName) -> Node:
 
 ## Runs the current action's goto again. Can be used for repeat-movement type actions
 ## like patrols, with the [method GoapAction.action_process] deciding if it should [method replay_goto] again or finish the action.
-## Or leave it run indefinetly until the action becomes invalid or the agent gets a new goal.
+## Or leave it run indefinitely until the action becomes invalid or the agent gets a new goal.
 func replay_goto() -> void:
 	# small design flaw but this should not come up again
 	# check_needs_repositioning calls the new goto

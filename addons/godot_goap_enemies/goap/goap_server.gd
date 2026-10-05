@@ -149,3 +149,53 @@ static func _reconstruct_path(node:PlanNode) -> Array[GoapAction]:
 	return plan
 
 #endregion
+
+
+
+#region Threads
+# 30 threads running at 2fps
+const THREAD_NUM = 30
+
+# thread number -> number of agents in the thread
+static var _threads:Dictionary[int, int] = {}
+static var _next_agent_thread := 0
+
+static var _has_monitors := false
+static var _total_agents := 0
+static var _total_plans_usec := 0
+static var _total_plans := 0
+
+static func register_agent(agent:GoapAgent) -> void:
+	if not _has_monitors:
+		Performance.add_custom_monitor("goap/agents", func(): return _total_agents, [], Performance.MONITOR_TYPE_QUANTITY)
+		Performance.add_custom_monitor("goap/total_new_plans", _monitor_plan_num, [], Performance.MONITOR_TYPE_QUANTITY)
+		Performance.add_custom_monitor("goap/plan_time_usec", _monitor_plan_time, [], Performance.MONITOR_TYPE_QUANTITY)
+		_has_monitors = true
+	
+	if not _threads.has(_next_agent_thread): _threads[_next_agent_thread] = 0
+	_threads[_next_agent_thread] += 1
+	_total_agents += 1
+	agent.thread_num = _next_agent_thread
+	agent.tree_exiting.connect(unregister_agent.bind(_next_agent_thread), CONNECT_ONE_SHOT)
+
+	_next_agent_thread += 1
+	if _next_agent_thread >= THREAD_NUM:
+		_next_agent_thread = 0
+
+static func unregister_agent(thread_num:int):
+	_threads[thread_num] -= 1
+	_total_agents -= 1
+
+static func report_planning_time(usec:int):
+	_total_plans_usec += usec
+	_total_plans += 1
+
+static func _monitor_plan_time() -> int:
+	var total := _total_plans_usec
+	_total_plans_usec = 0
+	return total
+
+static func _monitor_plan_num() -> int:
+	var total := _total_plans
+	_total_plans = 0
+	return total

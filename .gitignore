@@ -7,3 +7,6 @@
 actions
 goals
 examples
+
+# second plugin only repo to sync changes between godot projects
+addons/godot_goap_enemies/.git
