@@ -76,7 +76,7 @@ func _on_body_entered(body:Node) -> void:
 func _on_body_exited(body:Node) -> void:
 	if body == _target:
 		_target = null
-		var bodies:Array[Node] = eyes_area.get_overlapping_bodies()
+		var bodies:Array = eyes_area.get_overlapping_bodies()
 		for b in bodies:
 			if b.is_in_group(target_group):
 				_target = b
