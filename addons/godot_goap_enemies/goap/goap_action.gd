@@ -5,6 +5,9 @@ class_name GoapAction
 @export var preconditions:Dictionary[StringName, Variant]
 @export var effects:Dictionary[StringName, Variant]
 
+var goto_pos:Vector3 = -Vector3.INF
+var is_tracking:bool = false
+
 func _init():
 	action_name = _define_name()
 	preconditions = _define_preconditions()
@@ -12,6 +15,15 @@ func _init():
 
 func _to_string() -> String:
 	return "Action:" + action_name
+
+func awake(entity:Node, goap:GoapAgent, world_state:Dictionary[StringName, Variant]) -> void:
+	pass
+
+func start(entity:Node, goap:GoapAgent, world_state:Dictionary[StringName, Variant]) -> void:
+	pass
+
+func end(entity:Node, goap:GoapAgent, world_state:Dictionary[StringName, Variant]) -> void:
+	pass
 
 ## The actions unique name.
 func _define_name() -> StringName:

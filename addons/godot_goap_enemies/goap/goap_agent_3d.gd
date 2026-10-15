@@ -15,12 +15,19 @@ func _goto_process(delta:float) -> GotoQueryResult:
 	if nav_agent.is_target_reached():
 		return GotoQueryResult.GOTO_CLEARED
 	
-	var new_destination:Vector3 = _current_action.choose_goto_position_3d(entity, self, world_state)
-	if nav_agent.target_position.distance_squared_to(new_destination) >= 1.0:
-		nav_agent.target_position = new_destination
+	var new_destination:Vector3
+	if _current_action.is_tracking:
+		_current_action.choose_goto_position_3d(entity, self, world_state)
+	elif not _current_action.is_tracking:
+		if not _current_action.goto_pos.is_finite():
+			_current_action.goto_pos = _current_action.choose_goto_position_3d(entity, self, world_state)
+		new_destination = _current_action.goto_pos
+	
+	#if entity.global_position.distance_squared_to(new_destination) >= 1.0:
+	nav_agent.target_position = new_destination
 	
 	if not nav_agent.is_target_reachable():
-			return GotoQueryResult.TARGET_UNREACHABLE
+		return GotoQueryResult.TARGET_UNREACHABLE
 	
 	var next_point := nav_agent.get_next_path_position()
 	smooth_look_at(next_point, delta)
@@ -65,3 +72,55 @@ func is_action_reachable(action:GoapAction) -> bool:
 	if path.is_empty():
 		return false
 	return path[path.size() - 1].distance_to(pos) <= nav_agent.target_desired_distance
+
+func get_random_reachable_point(min_dist: float, max_dist: float) -> Vector3:
+	# ai
+	if min_dist > max_dist:
+		var tmp := min_dist
+		min_dist = max_dist
+		max_dist = tmp
+
+	var map: RID = nav_agent.get_navigation_map()
+	var layers: int = nav_agent.navigation_layers
+
+	# Start from the navmesh point closest to the agent
+	var origin: Vector3 = NavigationServer3D.map_get_closest_point(map, entity.global_position)
+
+	# Pick a random heading and a random wanted distance
+	var angle := randf() * TAU
+	var wanted := randf_range(min_dist, max_dist)
+	var dir := Vector3(cos(angle), 0.0, sin(angle))
+
+	# Aim at max_dist so the path is long enough to contain a point at `wanted`.
+	# If the target is off-mesh or unreachable, the path simply ends at the
+	# closest reachable point to it, so the path is always walkable.
+	var target := origin + dir * max_dist
+	var path: PackedVector3Array = NavigationServer3D.map_get_path(map, origin, target, true, layers)
+
+	var farthest := origin
+	var farthest_dist := 0.0
+
+	# Walk the path and find where it first crosses `wanted` distance from origin
+	for i in range(1, path.size()):
+		var a := path[i - 1]
+		var b := path[i]
+
+		if origin.distance_to(b) >= wanted:
+			# Segment/sphere intersection: |a + t*(b-a) - origin| = wanted
+			var ab := b - a
+			var ao := a - origin
+			var qa := ab.dot(ab)
+			var qb := 2.0 * ao.dot(ab)
+			var qc := ao.dot(ao) - wanted * wanted
+			var disc := maxf(qb * qb - 4.0 * qa * qc, 0.0)
+			var t := clampf((-qb + sqrt(disc)) / (2.0 * qa), 0.0, 1.0) if qa > 0.0 else 1.0
+			return a + ab * t
+
+		var d := origin.distance_to(b)
+		if d > farthest_dist:
+			farthest_dist = d
+			farthest = b
+
+	# The reachable area in that direction is shorter than `wanted` (a wall or
+	# the edge of the navmesh), so use the farthest reachable point instead.
+	return farthest

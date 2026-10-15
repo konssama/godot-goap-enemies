@@ -58,12 +58,16 @@ func _ready() -> void:
 	
 	for g in goals:
 		if GoapLibrary.goals_library.has(g):
-			_goal_scripts.append(GoapLibrary.goals_library[g].new())
+			var new = GoapLibrary.goals_library[g].new()
+			_goal_scripts.append(new)
+			new.awake(self.entity, self, world_state)
 		else:
 			push_error("GOAP: No goal ", g, " in GoapLibrary")
 	for a in actions:
 		if GoapLibrary.actions_library.has(a):
-			_action_scripts.append(GoapLibrary.actions_library[a].new())
+			var new = GoapLibrary.actions_library[a].new()
+			_action_scripts.append(new)
+			new.awake(self.entity, self, world_state)
 		else:
 			push_error("GOAP: No action ", a, " in GoapLibrary")
 	
@@ -71,6 +75,8 @@ func _ready() -> void:
 		world_state["has_" + c] = true
 	
 	GoapServer.register_agent(self)
+	
+	plan_abandoned.connect(print_abandonpement_issue)
 	
 	if enable_debugger:
 		var attachment = DEBUGGER_ATTACHMENT.new()
@@ -101,8 +107,8 @@ func _physics_process(delta: float) -> void:
 	
 	match _action_state:
 		ActionState.GOTO:
-			var finished := _goto_process(delta)
-			if finished:
+			var result := _goto_process(delta)
+			if result == GotoQueryResult.GOTO_CLEARED:
 				_action_state = ActionState.EXECUTE
 				action_began_animating.emit(_current_action)
 				
@@ -134,7 +140,10 @@ func _plan_process(delta: float) -> void:
 			return # we've finished our plan so let's get a new one next tick
 
 		# continue to next action
+		if _current_action:
+			_current_action.end(self.entity, self, world_state)
 		_current_action = _current_plan[_plan_step]
+		_current_action.start(self.entity, self, world_state)
 		
 		if not _current_action.is_still_valid(self.entity, self, world_state):
 			#print("ACTION INVALID")
@@ -142,6 +151,7 @@ func _plan_process(delta: float) -> void:
 			plan_abandoned.emit(PlanAbandonedReasons.ACTION_INVALID)
 			return
 		if _action_state == ActionState.IDLE:
+			print("checking reposition")
 			match check_needs_repositioning(_current_action):
 				GotoQueryResult.NEEDS_REPOSITION:
 					# enter goto state
@@ -160,10 +170,13 @@ func _plan_process(delta: float) -> void:
 		#print("GOAL CHANGED FROM TO", str(_current_goal), str(best_goal))
 		_clear_plan()
 		plan_abandoned.emit(PlanAbandonedReasons.GOAL_CHANGED)
+		if _current_goal:
+			_current_goal.end(self.entity, self, world_state)
 		_current_goal = best_goal
+		_current_goal.start(self.entity, self, world_state)
 		fresh_goal_chosen.emit(_current_goal)
 		_current_plan = GoapServer.create_plan(_current_goal.desired_state, _action_scripts, self)
-		#print(_current_plan)
+		print(_current_plan)
 		fresh_plan_chosen.emit(_current_plan)
 
 func check_needs_repositioning(action:GoapAction) -> GotoQueryResult:
@@ -176,12 +189,12 @@ func is_action_reachable(action:GoapAction) -> bool:
 	return true # implemented differently for 2d and 3d agents
 
 func _clear_plan():
-	_action_state = ActionState.IDLE
+	#_action_state = ActionState.IDLE
 	_current_plan.clear()
 	_plan_step = 0
 
 func _get_best_goal() -> GoapGoal:
-	var min_priority:float = INF
+	var min_priority:float = -INF
 	var chosen_goal:GoapGoal
 	for g in _goal_scripts:
 		if not g.is_still_valid(self.entity, self, world_state):
@@ -190,7 +203,7 @@ func _get_best_goal() -> GoapGoal:
 			continue # goal already satisfied
 		
 		var new_p := g.calculate_priority(self.entity, self, world_state)
-		if new_p < min_priority:
+		if new_p > min_priority:
 			min_priority = new_p
 			chosen_goal = g
 	return chosen_goal
@@ -222,3 +235,6 @@ func replay_goto() -> void:
 	# check_needs_repositioning calls the new goto
 	check_needs_repositioning(_current_action)
 	_action_state = ActionState.GOTO
+
+func print_abandonpement_issue(reason:PlanAbandonedReasons):
+	print(PlanAbandonedReasons.keys()[reason])

@@ -8,6 +8,15 @@ func _init() -> void:
 	goal_name = _define_name()
 	desired_state = _define_desired_state()
 
+func awake(entity:Node, goap:GoapAgent, world_state:Dictionary[StringName, Variant]) -> void:
+	pass
+
+func start(entity:Node, goap:GoapAgent, world_state:Dictionary[StringName, Variant]) -> void:
+	pass
+
+func end(entity:Node, goap:GoapAgent, world_state:Dictionary[StringName, Variant]) -> void:
+	pass
+
 func _to_string() -> String:
 	return "Goal:" + goal_name
 	
