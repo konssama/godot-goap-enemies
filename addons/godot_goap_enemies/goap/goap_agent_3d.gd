@@ -17,7 +17,7 @@ func _goto_process(delta:float) -> GotoQueryResult:
 	
 	var new_destination:Vector3
 	if _current_action.is_tracking:
-		_current_action.choose_goto_position_3d(entity, self, world_state)
+		new_destination = _current_action.choose_goto_position_3d(entity, self, world_state)
 	elif not _current_action.is_tracking:
 		if not _current_action.goto_pos.is_finite():
 			_current_action.goto_pos = _current_action.choose_goto_position_3d(entity, self, world_state)

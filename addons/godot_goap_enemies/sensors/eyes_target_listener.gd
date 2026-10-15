@@ -84,3 +84,6 @@ func _on_body_exited(body:Node) -> void:
 func _on_new_target(t:Node):
 	_target = t
 	agent.world_state[target_group+"_target_dead"] = false
+
+func get_target() -> Node:
+	return _target

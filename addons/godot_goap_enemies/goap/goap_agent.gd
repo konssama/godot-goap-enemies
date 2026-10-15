@@ -76,7 +76,7 @@ func _ready() -> void:
 	
 	GoapServer.register_agent(self)
 	
-	plan_abandoned.connect(print_abandonpement_issue)
+	plan_abandoned.connect(print_abandonment_issue)
 	
 	if enable_debugger:
 		var attachment = DEBUGGER_ATTACHMENT.new()
@@ -151,7 +151,7 @@ func _plan_process(delta: float) -> void:
 			plan_abandoned.emit(PlanAbandonedReasons.ACTION_INVALID)
 			return
 		if _action_state == ActionState.IDLE:
-			print("checking reposition")
+			#print("checking reposition")
 			match check_needs_repositioning(_current_action):
 				GotoQueryResult.NEEDS_REPOSITION:
 					# enter goto state
@@ -189,7 +189,7 @@ func is_action_reachable(action:GoapAction) -> bool:
 	return true # implemented differently for 2d and 3d agents
 
 func _clear_plan():
-	#_action_state = ActionState.IDLE
+	_action_state = ActionState.IDLE
 	_current_plan.clear()
 	_plan_step = 0
 
@@ -225,16 +225,18 @@ func pause_for_frames(physics_frames:int) -> void:
 	_pause_frames += physics_frames
 
 func get_component(component_key:StringName) -> Node:
-	return components[component_key]
+	if components.has(component_key):
+		return components[component_key]
+	else:
+		return null
 
 ## Runs the current action's goto again. Can be used for repeat-movement type actions
 ## like patrols, with the [method GoapAction.action_process] deciding if it should [method replay_goto] again or finish the action.
 ## Or leave it run indefinitely until the action becomes invalid or the agent gets a new goal.
 func replay_goto() -> void:
-	# small design flaw but this should not come up again
-	# check_needs_repositioning calls the new goto
-	check_needs_repositioning(_current_action)
-	_action_state = ActionState.GOTO
+	# invalidate old pos completely for the goto to start over
+	_current_action.goto_pos = -Vector3.INF
+	_action_state = ActionState.IDLE
 
-func print_abandonpement_issue(reason:PlanAbandonedReasons):
+func print_abandonment_issue(reason:PlanAbandonedReasons):
 	print(PlanAbandonedReasons.keys()[reason])
