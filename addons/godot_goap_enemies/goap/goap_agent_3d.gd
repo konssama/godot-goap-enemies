@@ -73,18 +73,24 @@ func is_action_reachable(action:GoapAction) -> bool:
 		return false
 	return path[path.size() - 1].distance_to(pos) <= nav_agent.target_desired_distance
 
-func get_random_reachable_point(min_dist: float, max_dist: float) -> Vector3:
-	# ai
+func get_random_reachable_point(min_dist: float, max_dist: float, origin_pos:Vector3=entity.global_position) -> Vector3:
+	# ai cause i don't know any geometry
+	if min_dist < nav_agent.target_desired_distance:
+		# don't pick a small distance you're already "at"
+		min_dist = nav_agent.target_desired_distance
+	
 	if min_dist > max_dist:
-		var tmp := min_dist
-		min_dist = max_dist
-		max_dist = tmp
+		#var tmp := min_dist
+		#min_dist = max_dist
+		#max_dist = tmp
+		push_error("min larger than max")
+
 
 	var map: RID = nav_agent.get_navigation_map()
 	var layers: int = nav_agent.navigation_layers
 
 	# Start from the navmesh point closest to the agent
-	var origin: Vector3 = NavigationServer3D.map_get_closest_point(map, entity.global_position)
+	var origin: Vector3 = NavigationServer3D.map_get_closest_point(map, origin_pos)
 
 	# Pick a random heading and a random wanted distance
 	var angle := randf() * TAU

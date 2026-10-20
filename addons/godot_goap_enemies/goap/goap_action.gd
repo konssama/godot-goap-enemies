@@ -38,7 +38,7 @@ func _define_preconditions() -> Dictionary[StringName, Variant]:
 ## Effects work more as promises rather than concrete results and are purposly not set by the plugin.
 ## You can set them conditionaly on [method action_process] or lead the agent in a place for a sensor to pick them up.
 ## (e.g. a go_to_cover action can just lead the agent to cover for the eyes to see it and set
-## [code]"sees_cover" = true [/code]
+## [code]"sees:cover" = true [/code]
 func _define_effects() -> Dictionary[StringName, Variant]:
 	return {}
 

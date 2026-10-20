@@ -2,7 +2,7 @@
 extends Node
 class_name GoapAgent
 
-enum ActionState {IDLE, GOTO, EXECUTE}
+enum ActionMovementState {IDLE, GOTO, EXECUTE}
 enum GotoQueryResult {GOTO_CLEARED, NEEDS_REPOSITION, TARGET_UNREACHABLE}
 enum PlanAbandonedReasons {GOAL_CHANGED, GOAL_UNSATISFIED, ACTION_INVALID, PLAN_INVALID,  GOTO_UNREACHABLE}
 
@@ -40,7 +40,7 @@ var world_state:Dictionary[StringName, Variant]
 var _goal_scripts:Array[GoapGoal] = []
 var _action_scripts:Array[GoapAction] = []
 
-var _action_state:ActionState = ActionState.IDLE
+var _action_state:ActionMovementState = ActionMovementState.IDLE
 
 var _current_goal:GoapGoal
 var _current_action:GoapAction
@@ -72,7 +72,7 @@ func _ready() -> void:
 			push_error("GOAP: No action ", a, " in GoapLibrary")
 	
 	for c in components.keys():
-		world_state["has_" + c] = true
+		world_state["components:" + c] = true
 	
 	GoapServer.register_agent(self)
 	
@@ -106,16 +106,16 @@ func _physics_process(delta: float) -> void:
 		_clear_plan()
 	
 	match _action_state:
-		ActionState.GOTO:
+		ActionMovementState.GOTO:
 			var result := _goto_process(delta)
 			if result == GotoQueryResult.GOTO_CLEARED:
-				_action_state = ActionState.EXECUTE
+				_action_state = ActionMovementState.EXECUTE
 				action_began_animating.emit(_current_action)
 				
-		ActionState.EXECUTE:
+		ActionMovementState.EXECUTE:
 			var finished := _current_action.action_process(self.entity, self, world_state, delta)
 			if finished:
-				_action_state = ActionState.IDLE
+				_action_state = ActionMovementState.IDLE
 				_plan_step += 1
 				if _plan_step < _current_plan.size():
 					# action will actually be entered next plan tick
@@ -150,22 +150,22 @@ func _plan_process(delta: float) -> void:
 			_clear_plan()
 			plan_abandoned.emit(PlanAbandonedReasons.ACTION_INVALID)
 			return
-		if _action_state == ActionState.IDLE:
+		if _action_state == ActionMovementState.IDLE:
 			#print("checking reposition")
 			match check_needs_repositioning(_current_action):
 				GotoQueryResult.NEEDS_REPOSITION:
 					# enter goto state
-					_action_state = ActionState.GOTO
+					_action_state = ActionMovementState.GOTO
 					action_began_goto.emit(_current_action)
 				GotoQueryResult.GOTO_CLEARED:
 					# enter animate state
-					_action_state = ActionState.EXECUTE
+					_action_state = ActionMovementState.EXECUTE
 					action_began_animating.emit(_current_action)
 				GotoQueryResult.TARGET_UNREACHABLE:
 					#print("TARGET UNREACHABLE ", str(_current_action))
 					_clear_plan()
 					plan_abandoned.emit(PlanAbandonedReasons.GOTO_UNREACHABLE)
-					_action_state = ActionState.IDLE
+					_action_state = ActionMovementState.IDLE
 	else:
 		#print("GOAL CHANGED FROM TO", str(_current_goal), str(best_goal))
 		_clear_plan()
@@ -189,7 +189,7 @@ func is_action_reachable(action:GoapAction) -> bool:
 	return true # implemented differently for 2d and 3d agents
 
 func _clear_plan():
-	_action_state = ActionState.IDLE
+	_action_state = ActionMovementState.IDLE
 	_current_plan.clear()
 	_plan_step = 0
 
@@ -236,7 +236,7 @@ func get_component(component_key:StringName) -> Node:
 func replay_goto() -> void:
 	# invalidate old pos completely for the goto to start over
 	_current_action.goto_pos = -Vector3.INF
-	_action_state = ActionState.IDLE
+	_action_state = ActionMovementState.IDLE
 
 func print_abandonment_issue(reason:PlanAbandonedReasons):
 	print(PlanAbandonedReasons.keys()[reason])

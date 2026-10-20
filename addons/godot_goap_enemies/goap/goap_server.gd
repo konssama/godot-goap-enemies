@@ -55,9 +55,8 @@ static func create_plan(desired_state:Dictionary[StringName, Variant], action_li
 			var child := _make_node(action, current, agent)
 			if child == null:
 				continue
-			child.g = current.g + action.calculate_cost(agent.entity, agent, agent.world_state)
 			open.append(child)
-
+	
 	return []
 
 
@@ -109,18 +108,20 @@ static func _make_node(action:GoapAction, parent:PlanNode, agent:GoapAgent) -> P
 		node.state_goal[key] = action.preconditions[key]
 
 	node.h = _heuristic(agent.world_state, node.state_goal)
+	node.g = parent.g + action.calculate_cost(agent.entity, agent, agent.world_state)
 	return node
 
 
 static func is_plan_valid(plan:Array[GoapAction], desired_state:Dictionary, agent:GoapAgent) -> bool:
+	# TODO needs to recurse as tree if plans become trees
 	if plan.is_empty():
 		return false
-	var sim:Dictionary = agent.world_state.duplicate()
+	var state:Dictionary = agent.world_state.duplicate()
 	for action in plan:
-		if not satisfies(sim, action.preconditions):
+		if not satisfies(state, action.preconditions):
 			return false
-		sim.merge(action.effects, true)
-	return satisfies(sim, desired_state)
+		state.merge(action.effects, true)
+	return satisfies(state, desired_state)
 
 
 static func _heuristic(world:Dictionary, state_goal:Dictionary) -> float:
@@ -141,6 +142,8 @@ static func satisfies(state:Dictionary, desired_state:Dictionary) -> bool:
 
 
 static func _reconstruct_path(node:PlanNode) -> Array[GoapAction]:
+	# TODO needs to folt the tree into actions from each leaf
+	# to root or added parent if plans become trees
 	var plan:Array[GoapAction] = []
 	var current := node
 	while current.action != null:
