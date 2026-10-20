@@ -1,3 +1,4 @@
+@abstract
 extends RefCounted
 class_name GoapAction
 
@@ -5,7 +6,6 @@ class_name GoapAction
 @export var preconditions:Dictionary[StringName, Variant]
 @export var effects:Dictionary[StringName, Variant]
 
-var goto_pos:Vector3 = -Vector3.INF
 var is_tracking:bool = false
 
 func _init():
@@ -15,15 +15,6 @@ func _init():
 
 func _to_string() -> String:
 	return "Action:" + action_name
-
-func awake(entity:Node, goap:GoapAgent, world_state:Dictionary[StringName, Variant]) -> void:
-	pass
-
-func start(entity:Node, goap:GoapAgent, world_state:Dictionary[StringName, Variant]) -> void:
-	pass
-
-func end(entity:Node, goap:GoapAgent, world_state:Dictionary[StringName, Variant]) -> void:
-	pass
 
 ## The actions unique name.
 func _define_name() -> StringName:
@@ -41,28 +32,3 @@ func _define_preconditions() -> Dictionary[StringName, Variant]:
 ## [code]"sees:cover" = true [/code]
 func _define_effects() -> Dictionary[StringName, Variant]:
 	return {}
-
-## The cost of this action being chosen when planning.
-func calculate_cost(entity:Node, goap:GoapAgent, world_state:Dictionary[StringName, Variant]) -> float:
-	return 0.0
-
-## An invalid action can break the agents plan at any time and the agent will adapt if it has valid actions. 
-func is_still_valid(entity:Node, goap:GoapAgent, world_state:Dictionary[StringName, Variant]) -> bool:
-	return true
-
-## The position this agent should go to to start this action. Return [code]Vector3.INF[/code] for an
-## action that can be done regardless of the agents position (e.g. shoot). Can also return the position
-## of a moving target and the agent will follow it, until it reaches and moves on to [method action_process].
-func choose_goto_position_3d(entity:Node, goap:GoapAgent, world_state:Dictionary[StringName, Variant]) -> Vector3:
-	return Vector3.INF
-
-## The position this agent should go to to start this action. Return [code]Vector2.INF[/code] for an
-## action that can be done regardless of the agents position (e.g. shoot). Can also return the position
-## of a moving target and the agent will follow it, until it reaches and moves on to [method action_process].
-func choose_goto_position_2d(entity:Node, goap:GoapAgent, world_state:Dictionary[StringName, Variant]) -> Vector2:
-	return Vector2.INF
-
-## Main procces of this action that runs every [code]physics_frame[/code]. Return true when this
-## action is considered finished and want to move to the next one.
-func action_process(entity:Node, goap:GoapAgent, world_state:Dictionary[StringName, Variant], delta:float) -> bool:
-	return true

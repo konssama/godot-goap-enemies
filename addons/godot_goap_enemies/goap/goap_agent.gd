@@ -113,7 +113,7 @@ func _physics_process(delta: float) -> void:
 				action_began_animating.emit(_current_action)
 				
 		ActionMovementState.EXECUTE:
-			var finished := _current_action.action_process(self.entity, self, world_state, delta)
+			var finished:bool = _current_action.action_process(self.entity, self, world_state, delta)
 			if finished:
 				_action_state = ActionMovementState.IDLE
 				_plan_step += 1
@@ -202,7 +202,7 @@ func _get_best_goal() -> GoapGoal:
 		if GoapServer.satisfies(world_state, g.desired_state):
 			continue # goal already satisfied
 		
-		var new_p := g.calculate_priority(self.entity, self, world_state)
+		var new_p:float = g.calculate_priority(self.entity, self, world_state)
 		if new_p > min_priority:
 			min_priority = new_p
 			chosen_goal = g

@@ -3,15 +3,15 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://vxljohcoe1e5"
-path="res://.godot/imported/goap_agent_3d.svg-172c9c5ec8e18b60de3f731914e8660c.ctex"
+path="res://.godot/imported/goap_agent_3d.svg-10fe25c4553a56b379eac29e29e6acb0.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://addons/godot_goap_enemies/goap/goap_agent_3d.svg"
-dest_files=["res://.godot/imported/goap_agent_3d.svg-172c9c5ec8e18b60de3f731914e8660c.ctex"]
+source_file="res://addons/godot_goap_enemies/goap/3d/goap_agent_3d.svg"
+dest_files=["res://.godot/imported/goap_agent_3d.svg-10fe25c4553a56b379eac29e29e6acb0.ctex"]
 
 [params]
 

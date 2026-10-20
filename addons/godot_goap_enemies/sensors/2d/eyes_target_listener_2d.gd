@@ -1,5 +1,5 @@
 extends Node
-class_name NpcEyesTargetListener
+class_name NpcEyesTargetListener2D
 
 @export var target_group:StringName
 
@@ -9,24 +9,17 @@ class_name NpcEyesTargetListener
 @export var low_awareness_frames:int
 @export var max_awareness:int
 
-var eyes_area:Node
-var agent:GoapAgent
+var eyes_area:NpcEyes2D
+var agent:GoapAgent2D
 
-var _target:Node: set=_on_new_target
-var _is_3d := false
+var _target:Node2D: set=_on_new_target
 var _current_awareness := 0
 var _current_distance:float
-var _candidates: Array[Node] = []
+var _candidates: Array[Node2D] = []
 
 func _ready() -> void:
 	eyes_area = get_parent()
-	if eyes_area is NpcEyes3D:
-		_is_3d = true
-	elif eyes_area is NpcEyes2D:
-		_is_3d = false
-	else:
-		push_error("NpcEyesTargetListener needs to be placed under an NpcEyes node.")
-
+	
 	agent = eyes_area.goap_agent
 	eyes_area.body_entered.connect(_on_body_entered)
 	eyes_area.body_exited.connect(_on_body_exited)
@@ -63,17 +56,15 @@ func _physics_process(delta:float) -> void:
 	else:
 		agent.world_state[target_group+"_target_dist"] = GoapLibrary.Distance.FAR
 
-func _on_body_entered(body:Node) -> void:
+func _on_body_entered(body:Node2D) -> void:
 	if _target:
 		return
 	if not body.is_in_group(target_group):
 		return
-	if not (_is_3d and body is Node3D) or (not _is_3d and body is Node2D):
-		return
 	
 	_target = body
 
-func _on_body_exited(body:Node) -> void:
+func _on_body_exited(body:Node2D) -> void:
 	if body == _target:
 		_target = null
 		var bodies:Array = eyes_area.get_overlapping_bodies()
@@ -81,9 +72,9 @@ func _on_body_exited(body:Node) -> void:
 			if b.is_in_group(target_group):
 				_target = b
 
-func _on_new_target(t:Node):
+func _on_new_target(t:Node2D):
 	_target = t
 	agent.world_state[target_group+"_target_dead"] = false
 
-func get_target() -> Node:
+func get_target() -> Node2D:
 	return _target

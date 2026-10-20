@@ -1,7 +1,7 @@
 extends Area2D
 class_name NpcEyes2D
 
-## Node groups these eyes will register. Will automatically provide [code]"sees_group"[/code]
+## Node groups these eyes will register. Will automatically provide [code]"sees:group"[/code]
 ## for it's [member GoapAgent.world_state]
 @export var look_for_groups:Array[StringName]
 @export var goap_agent:GoapAgent2D
@@ -14,7 +14,7 @@ func _ready() -> void:
 	
 	for group in look_for_groups:
 		seen_group_items[group] = []
-		goap_agent.world_state["sees_" + group] = false
+		goap_agent.world_state["sees:" + group] = false
 
 func _on_body_entered(body:Node2D):
 	for group in body.get_groups():
@@ -29,12 +29,12 @@ func _on_body_exited(body:Node2D):
 
 func _register_node(node:Node2D, group:StringName):
 	seen_group_items[group].append(node)
-	goap_agent.world_state["sees_" + group] = true
+	goap_agent.world_state["sees:" + group] = true
 
 func _remove_node(node:Node2D, group:StringName):
 	seen_group_items[group].erase(node)
 	if get_seen_in_group(group).is_empty():
-		goap_agent.world_state["sees_" + group] = false
+		goap_agent.world_state["sees:" + group] = false
 
 func get_seen_in_group(group:StringName) -> Array[Node2D]:
 	return seen_group_items[group]

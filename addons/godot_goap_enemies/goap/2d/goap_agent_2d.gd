@@ -15,7 +15,7 @@ func _goto_process(delta:float) -> GotoQueryResult:
 	if nav_agent.is_target_reached():
 		return GotoQueryResult.GOTO_CLEARED
 	
-	var new_destination:Vector2 = _current_action.choose_goto_position_2d(entity, self, world_state)
+	var new_destination:Vector2 = _current_action.choose_goto_position(entity, self, world_state)
 	if nav_agent.target_position.distance_squared_to(new_destination) >= 1.0:
 		nav_agent.target_position = new_destination
 	
@@ -40,7 +40,7 @@ func smooth_look_at(target: Vector2, delta: float) -> void:
 	entity.global_rotation = lerp_angle(entity.global_rotation, target_angle, weight)
 
 func check_needs_repositioning(action:GoapAction) -> GotoQueryResult:
-	var goto_pos:Vector2 = action.choose_goto_position_2d(self.entity, self, world_state)
+	var goto_pos:Vector2 = action.choose_goto_position(self.entity, self, world_state)
 	if goto_pos.is_finite():
 		nav_agent.target_position = goto_pos
 		if not nav_agent.is_target_reachable():
@@ -49,7 +49,7 @@ func check_needs_repositioning(action:GoapAction) -> GotoQueryResult:
 	return GotoQueryResult.GOTO_CLEARED # infinite pos means no repositioning needed
 
 func is_action_reachable(action:GoapAction) -> bool:
-	var pos = action.choose_goto_position_2d(entity, self, world_state)
+	var pos = action.choose_goto_position(entity, self, world_state)
 	if not pos.is_finite():
 		return true # you're already at valid position
 	
